@@ -1,1 +1,1 @@
-# kaltura_chat_app
+# Chat App
