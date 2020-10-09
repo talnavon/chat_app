@@ -46,6 +46,15 @@ export default {
       const role = req.body.Role
       const roomId  = req.body.Room_id
       const conversationId = req.body.Conversation_id
+
+      const visibility = req.body.visibility
+      if (!visibility){
+        visibility = 'Regular Message'
+      }
+      const replayToUserId =  req.body.Replay_to_user_id
+      const relatedToMsgId = req.body.Related_to_msg_id
+      
+
       // Check if this userid can post message 
       // in this conversation by conversation type and user role
       const user = await UserModel.getUserById(userId);
@@ -59,11 +68,20 @@ export default {
       if (role == user.role && role == USER_TYPES.GUEST && conversation.type == CHAT_CONVERSATION_TYPES.INSTRUCTORS){
         return res.status(403).json({
           success: false,
-          message: 'No authrized to send messages in this conversationId',
+          message: 'No authorized to send messages in this conversationId',
+        })
+      }
+
+      if (role == user.role && role == USER_TYPES.GUEST && conversation.type == CHAT_CONVERSATION_TYPES.QA
+        && replayToUserId){
+        return res.status(403).json({
+          success: false,
+          message: 'No authorized to replay to messages in this type of conversation',
         })
       }
      
-      const post = await ChatMessageModel.createPostInChatConversation(conversationId, messagePayload, userId);
+      const post = await ChatMessageModel.createPostInChatConversation(conversationId, messagePayload, userId, visibility,
+        replayToUserId, relatedToMsgId);
       return res.status(200).json({ success: true, post });
     } catch (error) {
       return res.status(500).json({ success: false, error: error })

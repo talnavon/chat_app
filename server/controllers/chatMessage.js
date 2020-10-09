@@ -132,7 +132,7 @@ export default {
         })
       }
 
-      const messages = await ChatMessageModel.getConversationMessages(conversationId)
+      const messages = await ChatMessageModel.getConversationMessages(conversationId, userId)
 
       return res.status(200).json({
         success: true,
