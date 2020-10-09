@@ -20,6 +20,9 @@ const chatMessageSchema = new mongoose.Schema(
       default: () => MESSAGE_TYPES.TYPE_TEXT,
     },
     postedByUser: String,
+    visibility: String,
+    replayToUserId: String,
+    relatedToMsgId: String,
   },
   {
     timestamps: true,
@@ -34,12 +37,16 @@ const chatMessageSchema = new mongoose.Schema(
  * @param {Object} message - message you want to post in the chat conversation
  * @param {String} postedByUser - user who is posting the message
  */
-chatMessageSchema.statics.createPostInChatConversation = async function (conversationId, message, postedByUser) {
+chatMessageSchema.statics.createPostInChatConversation = async function (conversationId, message, postedByUser, 
+  visibility, replayToUserId, relatedToMsgId) {
   try {
     const post = await this.create({
       conversationId,
       message,
-      postedByUser
+      postedByUser,
+      visibility,
+      replayToUserId,
+      relatedToMsgId
       
     });
     const aggregate = await this.aggregate([
@@ -104,10 +111,10 @@ chatMessageSchema.statics.createPostInChatConversation = async function (convers
 /**
  * @param {String} conversationId - chat conversation id
  */
-chatMessageSchema.statics.getConversationMessages = async function (conversationId) {
+chatMessageSchema.statics.getConversationMessages = async function (conversationId, postedByUser) {
   try {
     return this.aggregate([
-      { $match: { conversationId } },
+      { $match: { conversationId, postedByUser} },
       { $sort: { createdAt: -1 } },
       // do a join on another table called users, and 
       // get me a user whose _id = postedByUser
